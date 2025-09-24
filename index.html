@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陈博文的大厂冲刺计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: 我设计了一个多模块的单页应用（SPA）来呈现这份职业规划。结构分为：1. 现状诊断（简历分析和能力雷达图），让用户直观看到自己的强弱项。2. 优化冲刺计划（算法、八股文、系统设计），在用户原有计划上增加最关键的系统设计部分。3. 简历重塑与面试策略，提供具体可操作的优化建议。整个流程从自我认知到计划制定，再到求职准备，形成一个闭环。这种结构不是简单地回答“行不行”，而是提供一个完整的、可交互的解决方案，通过点击、查看图表等交互，引导用户深入思考和学习，从而提升求职成功率。 -->
+    <!-- Visualization & Content Choices: 1. 现状诊断 -> 目标：对比当前能力与大厂要求 -> 展现方式：Chart.js雷达图 -> 交互：鼠标悬浮提示 -> 理由：雷达图能直观展示多维度能力的差距，视觉冲击力强。 2. 冲刺计划 -> 目标：组织和细化学习任务 -> 展现方式：三栏式卡片布局，使用HTML/CSS构建的折叠面板 -> 交互：点击展开/收起 -> 理由：结构清晰，重点突出，用户可以按需查看细节，避免信息过载。 3. 简历重塑 -> 目标：展示简历优化点 -> 展现方式：HTML表格对比“优化前/后” -> 交互：无 -> 理由：直接对比最能体现优化的价值。 4. 面试流程 -> 目标：介绍大厂面试环节 -> 展现方式：HTML/CSS构建的流程图 -> 交互：无 -> 理由：清晰地呈现线性流程，帮助用户建立心理预期。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d3d3d;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            height: 40vh;
+            max-height: 450px;
+        }
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #2c3e50;
+        }
+        .section-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 2.5rem auto;
+            color: #5a6872;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+        }
+        .pill {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .accordion-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1rem;
+            font-weight: 500;
+            text-align: left;
+            background-color: #f9fafb;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-button:hover {
+            background-color: #f3f4f6;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            background-color: #ffffff;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center py-8">
+            <h1 class="text-4xl font-bold text-gray-800">陈博文的大厂冲刺计划</h1>
+            <p class="text-lg text-gray-500 mt-2">从CRUD到技术专家：你的专属三月冲刺路线图</p>
+        </header>
+
+        <main>
+            <section id="analysis" class="py-12">
+                <h2 class="section-title">1. 现状诊断：你的优势与机会</h2>
+                <p class="section-intro">
+                    你的简历展现了扎实的Java后端基础和宝贵的项目经验。我们首先来分析你的核心竞争力，并找到能够让你在众多候选人中脱颖而出的“闪光点”。
+                </p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-6">
+                        <div class="card p-6">
+                            <h3 class="font-bold text-xl mb-3 text-green-600">⭐ 核心优势 (Strengths)</h3>
+                            <ul class="space-y-3 list-inside text-gray-700">
+                                <li><span class="pill bg-blue-100 text-blue-800">技术栈主流：</span>熟练掌握Spring Cloud微服务体系，具备完整的项目开发和部署经验。</li>
+                                <li><span class="pill bg-green-100 text-green-800">项目经验对口：</span>仓储管理和SaaS看板项目涉及了分布式锁、数据可视化等有价值的技术点。</li>
+                                <li class="font-bold"><span class="pill bg-yellow-100 text-yellow-800">隐藏的王牌：</span>具备RAG、LangChain4j等AIGC技术整合经验，这是你最大的差异化优势！</li>
+                            </ul>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="font-bold text-xl mb-3 text-blue-600">🚀 关键机会点 (Opportunities)</h3>
+                            <ul class="space-y-3 list-inside text-gray-700">
+                                <li><span class="pill bg-indigo-100 text-indigo-800">量化项目成果：</span>将“提升30%效率”具体化，用技术指标（如QPS、响应时间）或业务指标（如订单处理量）来展示。</li>
+                                <li><span class="pill bg-purple-100 text-purple-800">深化项目论述：</span>准备好项目的架构图、技术选型理由、遇到的挑战和解决方案，体现你的思考深度。</li>
+                                <li><span class="pill bg-pink-100 text-pink-800">突出AI能力：</span>将AI经验融入一个独立的项目或作为现有项目的亮点进行重点包装，吸引面试官的注意。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-center font-bold text-xl mb-2 text-gray-800">能力雷达图：当前 vs. 大厂目标</h3>
+                        <div class="chart-container">
+                            <canvas id="skillsRadarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="plan" class="py-12">
+                <h2 class="section-title">2. 优化你的三月计划：三驾马车，并驾齐驱</h2>
+                <p class="section-intro">
+                    你的计划（算法+八股文）覆盖了面试的两个核心。但要进入大厂，我们必须加入第三个、也是最重要的部分：<strong class="text-blue-600">项目深度与系统设计</strong>。这三者将构成你成功的基石。
+                </p>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="font-bold text-xl mb-4 text-center text-emerald-600">第一驾马车：算法能力</h3>
+                        <div class="text-center mb-4">
+                            <span class="text-5xl font-bold">🎯</span>
+                        </div>
+                        <p class="text-gray-600 flex-grow"><strong>目标：</strong>拿下LeetCode Hot 100，并能清晰地讲解思路、时间和空间复杂度。</p>
+                        <ul class="mt-4 space-y-2 text-sm">
+                            <li class="p-2 bg-gray-50 rounded-md"><strong>第1个月：</strong>每天2-3题，完成第一遍，重点理解核心思想。</li>
+                            <li class="p-2 bg-gray-50 rounded-md"><strong>第2个月：</strong>分类复习（如动态规划、回溯），开始二刷，追求最优解。</li>
+                            <li class="p-2 bg-gray-50 rounded-md"><strong>第3个月：</strong>模拟面试，对着题目白板讲题，锻炼表达能力。</li>
+                        </ul>
+                    </div>
+
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="font-bold text-xl mb-4 text-center text-sky-600">第二驾马车：基础知识 (八股文)</h3>
+                        <div class="text-center mb-4">
+                            <span class="text-5xl font-bold">📚</span>
+                        </div>
+                        <p class="text-gray-600 flex-grow"><strong>目标：</strong>不仅要“背”，更要“理解”。形成自己的知识体系，能举一反三。</p>
+                        <div class="mt-4 space-y-2 text-sm">
+                            <div class="accordion">
+                                <button class="accordion-button rounded-t-md"><span>JVM & 并发</span><span class="accordion-icon">+</span></button>
+                                <div class="accordion-content"><p class="p-4 text-xs">内存模型JMM、垃圾回收机制GC、类加载过程、volatile、synchronized、JUC包原理。</p></div>
+                            </div>
+                            <div class="accordion">
+                                <button class="accordion-button"><span>数据库</span><span class="accordion-icon">+</span></button>
+                                <div class="accordion-content"><p class="p-4 text-xs">MySQL索引原理（B+树）、事务隔离级别、MVCC、锁机制、SQL优化、Redis数据结构与应用场景。</p></div>
+                            </div>
+                            <div class="accordion">
+                                <button class="accordion-button rounded-b-md"><span>分布式 & 中间件</span><span class="accordion-icon">+</span></button>
+                                <div class="accordion-content"><p class="p-4 text-xs">CAP/BASE理论、分布式事务解决方案、RPC原理、消息队列RabbitMQ高可用设计、Nacos/Gateway原理。</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6 flex flex-col border-2 border-blue-500">
+                        <div class="text-center">
+                           <span class="font-bold text-blue-500 bg-blue-100 px-3 py-1 rounded-full text-sm">⭐ 制胜关键 ⭐</span>
+                        </div>
+                        <h3 class="font-bold text-xl mt-3 mb-4 text-center text-blue-600">第三驾马车：系统设计与项目深度</h3>
+                        <div class="text-center mb-4">
+                            <span class="text-5xl font-bold">🏗️</span>
+                        </div>
+                        <p class="text-gray-600 flex-grow"><strong>目标：</strong>能够从0到1设计一个系统，并深入阐述自己做过的项目，展现技术视野和解决问题的能力。</p>
+                         <ul class="mt-4 space-y-2 text-sm">
+                            <li class="p-2 bg-gray-50 rounded-md"><strong>技术选型：</strong>为什么用Spring Cloud？为什么用Redis做分布式锁而不是Zookeeper？</li>
+                            <li class="p-2 bg-gray-50 rounded-md"><strong>挑战与解决：</strong>项目中遇到的最大技术挑战是什么？如何解决的？有哪些备选方案？</li>
+                            <li class="p-2 bg-gray-50 rounded-md"><strong>系统设计题：</strong>练习经典题目，如设计短链接系统、设计微信朋友圈、设计秒杀系统。</li>
+                            <li class="p-2 bg-blue-50 rounded-md font-semibold"><strong>AI能力融合：</strong>思考如何将你的AI技能应用到项目中，例如：为仓储系统设计一个“智能库存预警”功能。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="resume" class="py-12">
+                <h2 class="section-title">3. 简历重塑与面试策略</h2>
+                <p class="section-intro">
+                    一份好的简历是面试的入场券。根据前面的分析，我们需要对你的简历进行“手术刀”式的精准优化，并制定清晰的面试策略。
+                </p>
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-4">简历优化对比</h3>
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">模块</th>
+                                    <th scope="col" class="px-6 py-3">优化前 (Before)</th>
+                                    <th scope="col" class="px-6 py-3">优化后 (After)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white border-b">
+                                    <td class="px-6 py-4 font-medium">项目成果</td>
+                                    <td class="px-6 py-4">实现精准核对与异常预警,仓储效率提升30%。</td>
+                                    <td class="px-6 py-4 font-semibold text-green-700">通过优化库存盘点算法和引入Redis缓存，将盘点核对接口的平均响应时间从800ms降低至150ms，使整体仓储效率提升30%。</td>
+                                </tr>
+                                <tr class="bg-white border-b">
+                                    <td class="px-6 py-4 font-medium">项目逻辑</td>
+                                    <td class="px-6 py-4">负责出库与销售逻辑开发,利用分布式锁保障并发场景下数据一致性。</td>
+                                    <td class="px-6 py-4 font-semibold text-green-700">为解决高并发下的超卖问题，基于Redisson设计并实现了分布式锁方案，确保了库存数据的一致性，系统可支撑500 QPS的出库请求。</td>
+                                </tr>
+                                <tr class="bg-white">
+                                    <td class="px-6 py-4 font-medium">AI技能</td>
+                                    <td class="px-6 py-4">对大模型相关技术(RAG、LangChain4j、SpringAI)有实践整合经验。</td>
+                                    <td class="px-6 py-4 font-semibold text-green-700">主导或独立完成一个PoC项目：基于SpringAI和LangChain4j，构建了一个智能问答机器人，通过RAG技术实现了对公司内部技术文档的精准查询，将开发者查找问题的时间平均缩短50%。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                     <h3 class="font-bold text-xl mb-4 text-center">大厂面试通关流程</h3>
+                     <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                        <div class="p-4 bg-white rounded-lg shadow-md w-48">
+                            <h4 class="font-bold">简历筛选</h4>
+                            <p class="text-xs text-gray-500">突出亮点</p>
+                        </div>
+                        <div class="text-2xl text-gray-400">→</div>
+                        <div class="p-4 bg-white rounded-lg shadow-md w-48">
+                            <h4 class="font-bold">技术一面</h4>
+                            <p class="text-xs text-gray-500">算法 + 基础</p>
+                        </div>
+                        <div class="text-2xl text-gray-400">→</div>
+                        <div class="p-4 bg-blue-100 border border-blue-400 rounded-lg shadow-lg w-48">
+                            <h4 class="font-bold text-blue-800">技术二面/三面</h4>
+                            <p class="text-xs text-blue-600">项目深度 + 系统设计</p>
+                        </div>
+                         <div class="text-2xl text-gray-400">→</div>
+                        <div class="p-4 bg-white rounded-lg shadow-md w-48">
+                            <h4 class="font-bold">总监/HR面</h4>
+                            <p class="text-xs text-gray-500">综合素质</p>
+                        </div>
+                     </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center py-10 border-t mt-12">
+            <h3 class="text-2xl font-bold mb-4">结论与鼓励</h3>
+            <p class="max-w-3xl mx-auto text-gray-600">
+                你的目标并非遥不可及。目前市场确实充满挑战，但这正是真正有准备的工程师脱颖而出的最佳时机。
+                你的技术基础不错，尤其是有AI相关的经验，这在当前是巨大的加分项。
+                严格执行这个优化后的“三驾马车”计划，三个月后，你将不仅仅是一个“熟练的CRUD开发者”，而是一个具备<strong class="text-blue-600">系统性思维、能解决复杂问题、并拥有前沿技术视野</strong>的准专家。
+                保持专注，保持信心，祝你成功！
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('skillsRadarChart').getContext('2d');
+            const skillsRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['算法与数据结构', '系统设计能力', 'Java基础(JVM/并发)', '分布式/微服务', '数据库(MySQL/Redis)', 'AI技术应用'],
+                    datasets: [{
+                        label: '你的当前水平 (估算)',
+                        data: [6, 5, 7, 7, 6.5, 5],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    }, {
+                        label: '大厂目标水平',
+                        data: [8, 8, 8, 8, 8, 6],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: {
+                                stepSize: 2,
+                                backdropColor: 'rgba(0,0,0,0)',
+                            },
+                             pointLabels: {
+                                font: {
+                                    size: 13,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.r !== null) {
+                                        label += context.parsed.r.toFixed(1) + ' / 10';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const accordions = document.querySelectorAll('.accordion');
+            accordions.forEach(acc => {
+                const button = acc.querySelector('.accordion-button');
+                const content = acc.querySelector('.accordion-content');
+                const icon = acc.querySelector('.accordion-icon');
+
+                button.addEventListener('click', () => {
+                    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+                    if (isOpen) {
+                        content.style.maxHeight = '0px';
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(45deg)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
